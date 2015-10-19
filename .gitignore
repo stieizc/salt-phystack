@@ -1,0 +1,7 @@
+*.sw*
+*~
+*#
+
+/var
+/etc/salt/pki
+/instance/

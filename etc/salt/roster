@@ -1,0 +1,7 @@
+# -*- mode: YAML -*-
+---
+controller:
+  host: 121.194.167.64
+  user: charlie
+  sudo: True
+  tty: True
