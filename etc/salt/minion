@@ -1,8 +1,16 @@
 # -*- mode: YAML -*-
 root_dir: .
+
+fileserver_backend:
+  - roots
+  - git
+
 file_roots:
     base:
         - srv/salt
 pillar_roots:
     base:
         - srv/pillar
+
+gitfs_remotes:
+  - https://github.com/stieizc/chrony-formula
