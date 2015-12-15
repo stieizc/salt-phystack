@@ -2,7 +2,7 @@
 {% set repo_pkg = pillar.openstack.repository.package %}
 {% if grains.os_family == 'RedHat' %}
 openstack repository package:
-  pkg.latest:
+  pkg.installed:
     - name: {{repo_pkg}}
 
 yum makecache:
