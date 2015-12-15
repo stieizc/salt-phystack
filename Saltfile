@@ -1,4 +1,6 @@
+# -*- mode: YAML -*-
 salt-ssh:
     config_dir: etc/salt
     max_procs: 30
     wipe_ssh: True
+    ssh_priv: instance/salt-ssh-key

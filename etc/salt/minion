@@ -1,11 +1,8 @@
 # -*- mode: YAML -*-
 root_dir: .
-roster_file: instance/roster
 file_roots:
     base:
         - srv/salt
 pillar_roots:
     base:
         - srv/pillar
-
-failhard: True

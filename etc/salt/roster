@@ -1,8 +1,0 @@
-# -*- mode: YAML -*-
----
-phystack:
-  host: 121.194.167.80
-  user: charlie
-  sudo: True
-  tty: True
-  priv: /home/charlie/.ssh/stieizc_android
