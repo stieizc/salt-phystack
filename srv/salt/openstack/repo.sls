@@ -1,5 +1,6 @@
 ---
-{% set repo_pkg = pillar.openstack.repository.package %}
+{% from 'openstack/map.jinja2' import repo_pkg  %}
+
 {% if grains.os_family == 'RedHat' %}
 openstack repository package:
   pkg.installed:

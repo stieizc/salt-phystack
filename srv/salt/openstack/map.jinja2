@@ -1,0 +1,4 @@
+{% set repo_pkg = pillar.openstack.repository.package %}
+{% import_yaml 'openstack/defaults.yml' as defaults %}
+
+{% set base_packages = defaults.base_packages %}
