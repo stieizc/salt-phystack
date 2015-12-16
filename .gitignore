@@ -5,3 +5,7 @@
 /var
 /etc/salt/pki
 /instance/
+/keyrings/live/pubring.gpg~
+/keyrings/live/pubring.kbx~
+/keyrings/live/secring.gpg
+/srv/pillar/database.sls
