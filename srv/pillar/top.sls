@@ -2,5 +2,6 @@
 base:
   '*':
     - common
-    - '{{grains["os_family"]}}'
-    - '{{grains["os"]}}'
+    - 'os/{{grains["os_family"]}}'
+    - 'os/{{grains["os"]}}'
+    - database
