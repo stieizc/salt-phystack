@@ -2,8 +2,6 @@
 chrony:
   lookup:
     options:
-      absent:
-        - server
       present:
         server:
           - ntp.sjtu.edu.cn iburst
