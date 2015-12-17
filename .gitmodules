@@ -1,0 +1,6 @@
+[submodule "srv/formulas/chrony-formula"]
+	path = srv/formulas/chrony-formula
+	url = https://github.com/stieizc/chrony-formula
+[submodule "srv/formulas/mysql-formula"]
+	path = srv/formulas/mysql-formula
+	url = https://github.com/saltstack-formulas/mysql-formula

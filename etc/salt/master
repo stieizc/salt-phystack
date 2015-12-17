@@ -2,18 +2,22 @@
 root_dir: .
 roster_file: instance/roster
 
-fileserver_backend:
-  - roots
-  - git
+#fileserver_backend:
+#  - roots
+#  - git
 
 file_roots:
     base:
         - srv/salt
+        - srv/formulas/chrony-formula
+        - srv/formulas/mysql-formula
+
 pillar_roots:
     base:
         - srv/pillar
 
-gitfs_remotes:
-  - https://github.com/stieizc/chrony-formula
+#gitfs_remotes:
+#  - https://github.com/stieizc/chrony-formula
+#  - https://github.com/saltstack-formulas/mysql-formula
 
 failhard: True
