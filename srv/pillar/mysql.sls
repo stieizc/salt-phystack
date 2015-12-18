@@ -27,11 +27,12 @@ mysql:
     mysqld_safe:
       log-error: /var/log/mariadb/mariadb.log
       pid-file: /var/run/mariadb/mariadb.pid
+    lookup:
+      python: python2-PyMySQL
 
-  lookup:
 {%- if grains.os_family == 'RedHat' and grains.osmajorrelease == '7' %}
+  lookup:
     server: mariadb-server
     client: mariadb
     service: mariadb
 {% endif -%}
-    python: python2-PyMySQL
