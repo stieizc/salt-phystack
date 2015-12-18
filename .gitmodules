@@ -4,3 +4,6 @@
 [submodule "srv/formulas/mysql-formula"]
 	path = srv/formulas/mysql-formula
 	url = https://github.com/saltstack-formulas/mysql-formula
+[submodule "srv/formulas/epel-formula"]
+	path = srv/formulas/epel-formula
+	url = https://github.com/saltstack-formulas/epel-formula.git
