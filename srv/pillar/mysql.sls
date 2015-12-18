@@ -1,4 +1,4 @@
-{% import_yaml 'database.yml' as database %}
+{% import_yaml 'database/accounts.yml' as accounts %}
 ---
 mysql:
   global:
@@ -17,7 +17,7 @@ mysql:
 
   server:
     root_user: 'root'
-    root_password: {{database.accounts.root.password}}
+    root_password: {{accounts.root.password}}
     mysqld:
       default-storage-engine: innodb
       innodb_file_per_table: true
