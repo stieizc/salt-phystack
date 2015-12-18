@@ -1,2 +1,1 @@
-srv/pillar/database.yml
 srv/pillar/mq.yml
