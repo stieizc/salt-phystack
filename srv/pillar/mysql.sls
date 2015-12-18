@@ -30,6 +30,18 @@ mysql:
     lookup:
       python: python2-PyMySQL
 
+  user:
+{%- for k, data in accounts %}
+{%- if k != 'root' %}
+    {{data.user}}:
+      password: {{data.password}}
+      host: localhost
+      databases:
+        - database: {{data.db}}
+          grants: ['all privileges']
+{%- endif %}
+{% endfor -%}
+
 {%- if grains.os_family == 'RedHat' and grains.osmajorrelease == '7' %}
   lookup:
     server: mariadb-server
