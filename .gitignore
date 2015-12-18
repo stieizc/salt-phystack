@@ -9,3 +9,4 @@
 /keyrings/live/pubring.kbx~
 /keyrings/live/secring.gpg
 /srv/pillar/database.yml
+/srv/pillar/mq.yml

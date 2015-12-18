@@ -11,6 +11,8 @@ file_roots:
         - srv/salt
         - srv/formulas/chrony-formula
         - srv/formulas/mysql-formula
+        - srv/formulas/epel-formula
+        - srv/formulas/rabbitmq-formula
 
 pillar_roots:
     base:

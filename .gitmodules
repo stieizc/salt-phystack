@@ -7,3 +7,6 @@
 [submodule "srv/formulas/epel-formula"]
 	path = srv/formulas/epel-formula
 	url = https://github.com/saltstack-formulas/epel-formula.git
+[submodule "srv/formulas/rabbitmq-formula"]
+	path = srv/formulas/rabbitmq-formula
+	url = https://github.com/saltstack-formulas/rabbitmq-formula.git
