@@ -10,3 +10,4 @@
 /keyrings/live/secring.gpg
 /srv/pillar/mq.yml
 /srv/pillar/database/accounts.yml
+/srv/pillar/openstack/keystone/accounts.yml
