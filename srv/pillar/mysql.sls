@@ -31,7 +31,7 @@ mysql:
       python: python2-PyMySQL
 
   user:
-{%- for k, data in accounts %}
+{%- for k, data in accounts.iteritems() %}
 {%- if k != 'root' %}
     {{data.user}}:
       password: {{data.password}}

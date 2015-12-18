@@ -1,3 +1,4 @@
 srv/pillar/database/accounts.yml
 srv/pillar/mq.yml
 srv/pillar/openstack/keystone/accounts.yml
+srv/pillar/openstack/keystone.sls
