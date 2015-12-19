@@ -10,8 +10,8 @@ Module for handling openstack keystone calls.
 
         keystone.user: admin
         keystone.password: verybadpass
-        keystone.tenant: admin
-        keystone.tenant_id: f80919baedab48ec8931f200c65a50df
+        keystone.project: admin
+        keystone.project_id: f80919baedab48ec8931f200c65a50df
         keystone.auth_url: 'http://127.0.0.1:5000/v2.0/'
 
     OR (for token based authentication)
@@ -29,15 +29,15 @@ Module for handling openstack keystone calls.
         openstack1:
           keystone.user: admin
           keystone.password: verybadpass
-          keystone.tenant: admin
-          keystone.tenant_id: f80919baedab48ec8931f200c65a50df
+          keystone.project: admin
+          keystone.project_id: f80919baedab48ec8931f200c65a50df
           keystone.auth_url: 'http://127.0.0.1:5000/v2.0/'
 
         openstack2:
           keystone.user: admin
           keystone.password: verybadpass
-          keystone.tenant: admin
-          keystone.tenant_id: f80919baedab48ec8931f200c65a50df
+          keystone.project: admin
+          keystone.project_id: f80919baedab48ec8931f200c65a50df
           keystone.auth_url: 'http://127.0.0.2:5000/v2.0/'
 
     With this configuration in place, any of the keystone functions can make use
@@ -46,7 +46,7 @@ Module for handling openstack keystone calls.
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_list profile=openstack1
+        salt '*' keystone.project_list profile=openstack1
 '''
 
 # Import Python libs
@@ -105,8 +105,8 @@ def auth(profile=None, **connection_args):
 
     user = get('user', 'admin')
     password = get('password', 'ADMIN')
-    tenant = get('tenant', 'admin')
-    tenant_id = get('tenant_id')
+    project = get('project', 'admin')
+    project_id = get('project_id')
     auth_url = get('auth_url', 'http://127.0.0.1:35357/v2.0/')
     insecure = get('insecure', False)
     token = get('token')
@@ -118,8 +118,8 @@ def auth(profile=None, **connection_args):
     else:
         kwargs = {'username': user,
                   'password': password,
-                  'tenant_name': tenant,
-                  'tenant_id': tenant_id,
+                  'project_name': project,
+                  'project_id': project_id,
                   'auth_url': auth_url}
         # 'insecure' keyword not supported by all v2.0 keystone clients
         #   this ensures it's only passed in when defined
@@ -130,19 +130,19 @@ def auth(profile=None, **connection_args):
 
 
 def ec2_credentials_create(user_id=None, name=None,
-                           tenant_id=None, tenant=None,
+                           project_id=None, project=None,
                            profile=None, **connection_args):
     '''
-    Create EC2-compatible credentials for user per tenant
+    Create EC2-compatible credentials for user per project
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt '*' keystone.ec2_credentials_create name=admin tenant=admin
+        salt '*' keystone.ec2_credentials_create name=admin project=admin
         salt '*' keystone.ec2_credentials_create \
 user_id=c965f79c4f864eaaa9c3b41904e67082 \
-tenant_id=722787eb540849158668370dc627ec5f
+project_id=722787eb540849158668370dc627ec5f
     '''
     kstone = auth(profile, **connection_args)
 
@@ -152,16 +152,16 @@ tenant_id=722787eb540849158668370dc627ec5f
     if not user_id:
         return {'Error': 'Could not resolve User ID'}
 
-    if tenant:
-        tenant_id = tenant_get(name=tenant, profile=profile,
-                               **connection_args)[tenant]['id']
-    if not tenant_id:
+    if project:
+        project_id = project_get(name=project, profile=profile,
+                               **connection_args)[project]['id']
+    if not project_id:
         return {'Error': 'Could not resolve Tenant ID'}
 
-    newec2 = kstone.ec2.create(user_id, tenant_id)
+    newec2 = kstone.ec2.create(user_id, project_id)
     return {'access': newec2.access,
             'secret': newec2.secret,
-            'tenant_id': newec2.tenant_id,
+            'project_id': newec2.project_id,
             'user_id': newec2.user_id}
 
 
@@ -217,7 +217,7 @@ def ec2_credentials_get(user_id=None, name=None, access=None,
     ec2_credentials = kstone.ec2.get(user_id=user_id, access=access,
                                      profile=profile, **connection_args)
     ret[ec2_credentials.user_id] = {'user_id': ec2_credentials.user_id,
-                                    'tenant': ec2_credentials.tenant_id,
+                                    'project': ec2_credentials.project_id,
                                     'access': ec2_credentials.access,
                                     'secret': ec2_credentials.secret}
     return ret
@@ -247,7 +247,7 @@ def ec2_credentials_list(user_id=None, name=None, profile=None,
         return {'Error': 'Unable to resolve user id'}
     for ec2_credential in kstone.ec2.list(user_id):
         ret[ec2_credential.user_id] = {'user_id': ec2_credential.user_id,
-                                       'tenant_id': ec2_credential.tenant_id,
+                                       'project_id': ec2_credential.project_id,
                                        'access': ec2_credential.access,
                                        'secret': ec2_credential.secret}
     return ret
@@ -521,105 +521,105 @@ def service_list(profile=None, **connection_args):
     return ret
 
 
-def tenant_create(name, description=None, enabled=True, profile=None,
+def project_create(name, description=None, enabled=True, profile=None,
                   **connection_args):
     '''
-    Create a keystone tenant
+    Create a keystone project
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_create nova description='nova tenant'
-        salt '*' keystone.tenant_create test enabled=False
+        salt '*' keystone.project_create nova description='nova project'
+        salt '*' keystone.project_create test enabled=False
     '''
     kstone = auth(profile, **connection_args)
-    new = kstone.tenants.create(name, description, enabled)
-    return tenant_get(new.id, profile=profile, **connection_args)
+    new = kstone.projects.create(name, description, enabled)
+    return project_get(new.id, profile=profile, **connection_args)
 
 
-def tenant_delete(tenant_id=None, name=None, profile=None, **connection_args):
+def project_delete(project_id=None, name=None, profile=None, **connection_args):
     '''
-    Delete a tenant (keystone tenant-delete)
+    Delete a project (keystone project-delete)
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_delete c965f79c4f864eaaa9c3b41904e67082
-        salt '*' keystone.tenant_delete tenant_id=c965f79c4f864eaaa9c3b41904e67082
-        salt '*' keystone.tenant_delete name=demo
+        salt '*' keystone.project_delete c965f79c4f864eaaa9c3b41904e67082
+        salt '*' keystone.project_delete project_id=c965f79c4f864eaaa9c3b41904e67082
+        salt '*' keystone.project_delete name=demo
     '''
     kstone = auth(profile, **connection_args)
     if name:
-        for tenant in kstone.tenants.list():
-            if tenant.name == name:
-                tenant_id = tenant.id
+        for project in kstone.projects.list():
+            if project.name == name:
+                project_id = project.id
                 break
-    if not tenant_id:
-        return {'Error': 'Unable to resolve tenant id'}
-    kstone.tenants.delete(tenant_id)
-    ret = 'Tenant ID {0} deleted'.format(tenant_id)
+    if not project_id:
+        return {'Error': 'Unable to resolve project id'}
+    kstone.projects.delete(project_id)
+    ret = 'Tenant ID {0} deleted'.format(project_id)
     if name:
 
         ret += ' ({0})'.format(name)
     return ret
 
 
-def tenant_get(tenant_id=None, name=None, profile=None,
+def project_get(project_id=None, name=None, profile=None,
                **connection_args):
     '''
-    Return a specific tenants (keystone tenant-get)
+    Return a specific projects (keystone project-get)
 
     CLI Examples:
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_get c965f79c4f864eaaa9c3b41904e67082
-        salt '*' keystone.tenant_get tenant_id=c965f79c4f864eaaa9c3b41904e67082
-        salt '*' keystone.tenant_get name=nova
+        salt '*' keystone.project_get c965f79c4f864eaaa9c3b41904e67082
+        salt '*' keystone.project_get project_id=c965f79c4f864eaaa9c3b41904e67082
+        salt '*' keystone.project_get name=nova
     '''
     kstone = auth(profile, **connection_args)
     ret = {}
     if name:
-        for tenant in kstone.tenants.list():
-            if tenant.name == name:
-                tenant_id = tenant.id
+        for project in kstone.projects.list():
+            if project.name == name:
+                project_id = project.id
                 break
-    if not tenant_id:
-        return {'Error': 'Unable to resolve tenant id'}
-    tenant = kstone.tenants.get(tenant_id)
-    ret[tenant.name] = {'id': tenant.id,
-                        'name': tenant.name,
-                        'description': tenant.description,
-                        'enabled': tenant.enabled}
+    if not project_id:
+        return {'Error': 'Unable to resolve project id'}
+    project = kstone.projects.get(project_id)
+    ret[project.name] = {'id': project.id,
+                        'name': project.name,
+                        'description': project.description,
+                        'enabled': project.enabled}
     return ret
 
 
-def tenant_list(profile=None, **connection_args):
+def project_list(profile=None, **connection_args):
     '''
-    Return a list of available tenants (keystone tenants-list)
+    Return a list of available projects (keystone projects-list)
 
     CLI Example:
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_list
+        salt '*' keystone.project_list
     '''
     kstone = auth(profile, **connection_args)
     ret = {}
-    for tenant in kstone.tenants.list():
-        ret[tenant.name] = {'id': tenant.id,
-                            'name': tenant.name,
-                            'description': tenant.description,
-                            'enabled': tenant.enabled}
+    for project in kstone.projects.list():
+        ret[project.name] = {'id': project.id,
+                            'name': project.name,
+                            'description': project.description,
+                            'enabled': project.enabled}
     return ret
 
 
-def tenant_update(tenant_id=None, name=None, description=None,
+def project_update(project_id=None, name=None, description=None,
                   enabled=None, profile=None, **connection_args):
     '''
-    Update a tenant's information (keystone tenant-update)
+    Update a project's information (keystone project-update)
     The following fields may be updated: name, email, enabled.
     Can only update name if targeting by ID
 
@@ -627,26 +627,26 @@ def tenant_update(tenant_id=None, name=None, description=None,
 
     .. code-block:: bash
 
-        salt '*' keystone.tenant_update name=admin enabled=True
-        salt '*' keystone.tenant_update c965f79c4f864eaaa9c3b41904e67082 name=admin email=admin@domain.com
+        salt '*' keystone.project_update name=admin enabled=True
+        salt '*' keystone.project_update c965f79c4f864eaaa9c3b41904e67082 name=admin email=admin@domain.com
     '''
     kstone = auth(profile, **connection_args)
-    if not tenant_id:
-        for tenant in kstone.tenants.list():
-            if tenant.name == name:
-                tenant_id = tenant.id
+    if not project_id:
+        for project in kstone.projects.list():
+            if project.name == name:
+                project_id = project.id
                 break
-    if not tenant_id:
-        return {'Error': 'Unable to resolve tenant id'}
+    if not project_id:
+        return {'Error': 'Unable to resolve project id'}
 
-    tenant = kstone.tenants.get(tenant_id)
+    project = kstone.projects.get(project_id)
     if not name:
-        name = tenant.name
+        name = project.name
     if not description:
-        description = tenant.description
+        description = project.description
     if enabled is None:
-        enabled = tenant.enabled
-    kstone.tenants.update(tenant_id, name, description, enabled)
+        enabled = project.enabled
+    kstone.projects.update(project_id, name, description, enabled)
 
 
 def token_get(profile=None, **connection_args):
@@ -664,7 +664,7 @@ def token_get(profile=None, **connection_args):
     return {'id': token['id'],
             'expires': token['expires'],
             'user_id': token['user_id'],
-            'tenant_id': token['tenant_id']}
+            'project_id': token['project_id']}
 
 
 def user_list(profile=None, **connection_args):
@@ -684,9 +684,9 @@ def user_list(profile=None, **connection_args):
                           'name': user.name,
                           'email': user.email,
                           'enabled': user.enabled}
-        tenant_id = getattr(user, 'tenantId', None)
-        if tenant_id:
-            ret[user.name]['tenant_id'] = tenant_id
+        project_id = getattr(user, 'projectId', None)
+        if project_id:
+            ret[user.name]['project_id'] = project_id
     return ret
 
 
@@ -722,13 +722,13 @@ def user_get(user_id=None, name=None, profile=None, **connection_args):
                       'name': user.name,
                       'email': user.email,
                       'enabled': user.enabled}
-    tenant_id = getattr(user, 'tenantId', None)
-    if tenant_id:
-        ret[user.name]['tenant_id'] = tenant_id
+    project_id = getattr(user, 'projectId', None)
+    if project_id:
+        ret[user.name]['project_id'] = project_id
     return ret
 
 
-def user_create(name, password, email, tenant_id=None,
+def user_create(name, password, email, project_id=None,
                 enabled=True, profile=None, **connection_args):
     '''
     Create a user (keystone user-create)
@@ -737,13 +737,13 @@ def user_create(name, password, email, tenant_id=None,
 
     .. code-block:: bash
 
-        salt '*' keystone.user_create name=jack password=zero email=jack@halloweentown.org tenant_id=a28a7b5a999a455f84b1f5210264375e enabled=True
+        salt '*' keystone.user_create name=jack password=zero email=jack@halloweentown.org project_id=a28a7b5a999a455f84b1f5210264375e enabled=True
     '''
     kstone = auth(profile, **connection_args)
     item = kstone.users.create(name=name,
                                password=password,
                                email=email,
-                               tenant_id=tenant_id,
+                               project_id=project_id,
                                enabled=enabled)
     return user_get(item.id, profile=profile, **connection_args)
 
@@ -777,10 +777,10 @@ def user_delete(user_id=None, name=None, profile=None, **connection_args):
 
 
 def user_update(user_id=None, name=None, email=None, enabled=None,
-                tenant=None, profile=None, **connection_args):
+                project=None, profile=None, **connection_args):
     '''
     Update a user's information (keystone user-update)
-    The following fields may be updated: name, email, enabled, tenant.
+    The following fields may be updated: name, email, enabled, project.
     Because the name is one of the fields, a valid user id is required.
 
     CLI Examples:
@@ -807,12 +807,12 @@ def user_update(user_id=None, name=None, email=None, enabled=None,
     if enabled is None:
         enabled = user.enabled
     kstone.users.update(user=user_id, name=name, email=email, enabled=enabled)
-    if tenant:
-        for tnt in kstone.tenants.list():
-            if tnt.name == tenant:
-                tenant_id = tnt.id
+    if project:
+        for tnt in kstone.projects.list():
+            if tnt.name == project:
+                project_id = tnt.id
                 break
-        kstone.users.update_tenant(user_id, tenant_id)
+        kstone.users.update_project(user_id, project_id)
     ret = 'Info updated for user ID {0}'.format(user_id)
     return ret
 
@@ -882,11 +882,11 @@ def user_password_update(user_id=None, name=None, password=None,
     return ret
 
 
-def user_role_add(user_id=None, user=None, tenant_id=None,
-                  tenant=None, role_id=None, role=None, profile=None,
+def user_role_add(user_id=None, user=None, project_id=None,
+                  project=None, role_id=None, role=None, profile=None,
                   **connection_args):
     '''
-    Add role for user in tenant (keystone user-role-add)
+    Add role for user in project (keystone user-role-add)
 
     CLI Examples:
 
@@ -894,9 +894,9 @@ def user_role_add(user_id=None, user=None, tenant_id=None,
 
         salt '*' keystone.user_role_add \
 user_id=298ce377245c4ec9b70e1c639c89e654 \
-tenant_id=7167a092ece84bae8cead4bf9d15bb3b \
+project_id=7167a092ece84bae8cead4bf9d15bb3b \
 role_id=ce377245c4ec9b70e1c639c89e8cead4
-        salt '*' keystone.user_role_add user=admin tenant=admin role=admin
+        salt '*' keystone.user_role_add user=admin project=admin role=admin
     '''
     kstone = auth(profile, **connection_args)
     if user:
@@ -908,14 +908,14 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not user_id:
         return {'Error': 'Unable to resolve user id'}
 
-    if tenant:
-        tenant_id = tenant_get(name=tenant, profile=profile,
-                               **connection_args)[tenant]['id']
+    if project:
+        project_id = project_get(name=project, profile=profile,
+                               **connection_args)[project]['id']
     else:
-        tenant = next(six.iterkeys(tenant_get(tenant_id, profile=profile,
+        project = next(six.iterkeys(project_get(project_id, profile=profile,
                                               **connection_args)))['name']
-    if not tenant_id:
-        return {'Error': 'Unable to resolve tenant id'}
+    if not project_id:
+        return {'Error': 'Unable to resolve project id'}
 
     if role:
         role_id = role_get(name=role, profile=profile,
@@ -926,16 +926,16 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not role_id:
         return {'Error': 'Unable to resolve role id'}
 
-    kstone.roles.add_user_role(user_id, role_id, tenant_id)
-    ret_msg = '"{0}" role added for user "{1}" for "{2}" tenant'
-    return ret_msg.format(role, user, tenant)
+    kstone.roles.add_user_role(user_id, role_id, project_id)
+    ret_msg = '"{0}" role added for user "{1}" for "{2}" project'
+    return ret_msg.format(role, user, project)
 
 
-def user_role_remove(user_id=None, user=None, tenant_id=None,
-                     tenant=None, role_id=None, role=None,
+def user_role_remove(user_id=None, user=None, project_id=None,
+                     project=None, role_id=None, role=None,
                      profile=None, **connection_args):
     '''
-    Remove role for user in tenant (keystone user-role-remove)
+    Remove role for user in project (keystone user-role-remove)
 
     CLI Examples:
 
@@ -943,9 +943,9 @@ def user_role_remove(user_id=None, user=None, tenant_id=None,
 
         salt '*' keystone.user_role_remove \
 user_id=298ce377245c4ec9b70e1c639c89e654 \
-tenant_id=7167a092ece84bae8cead4bf9d15bb3b \
+project_id=7167a092ece84bae8cead4bf9d15bb3b \
 role_id=ce377245c4ec9b70e1c639c89e8cead4
-        salt '*' keystone.user_role_remove user=admin tenant=admin role=admin
+        salt '*' keystone.user_role_remove user=admin project=admin role=admin
     '''
     kstone = auth(profile, **connection_args)
     if user:
@@ -957,14 +957,14 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not user_id:
         return {'Error': 'Unable to resolve user id'}
 
-    if tenant:
-        tenant_id = tenant_get(name=tenant, profile=profile,
-                               **connection_args)[tenant]['id']
+    if project:
+        project_id = project_get(name=project, profile=profile,
+                               **connection_args)[project]['id']
     else:
-        tenant = next(six.iterkeys(tenant_get(tenant_id, profile=profile,
+        project = next(six.iterkeys(project_get(project_id, profile=profile,
                                               **connection_args)))['name']
-    if not tenant_id:
-        return {'Error': 'Unable to resolve tenant id'}
+    if not project_id:
+        return {'Error': 'Unable to resolve project id'}
 
     if role:
         role_id = role_get(name=role, profile=profile,
@@ -974,13 +974,13 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not role_id:
         return {'Error': 'Unable to resolve role id'}
 
-    kstone.roles.remove_user_role(user_id, role_id, tenant_id)
-    ret_msg = '"{0}" role removed for user "{1}" under "{2}" tenant'
-    return ret_msg.format(role, user, tenant)
+    kstone.roles.remove_user_role(user_id, role_id, project_id)
+    ret_msg = '"{0}" role removed for user "{1}" under "{2}" project'
+    return ret_msg.format(role, user, project)
 
 
-def user_role_list(user_id=None, tenant_id=None, user_name=None,
-                   tenant_name=None, profile=None, **connection_args):
+def user_role_list(user_id=None, project_id=None, user_name=None,
+                   project_name=None, profile=None, **connection_args):
     '''
     Return a list of available user_roles (keystone user-roles-list)
 
@@ -990,8 +990,8 @@ def user_role_list(user_id=None, tenant_id=None, user_name=None,
 
         salt '*' keystone.user_role_list \
 user_id=298ce377245c4ec9b70e1c639c89e654 \
-tenant_id=7167a092ece84bae8cead4bf9d15bb3b
-        salt '*' keystone.user_role_list user_name=admin tenant_name=admin
+project_id=7167a092ece84bae8cead4bf9d15bb3b
+        salt '*' keystone.user_role_list user_name=admin project_name=admin
     '''
     kstone = auth(profile, **connection_args)
     ret = {}
@@ -1000,18 +1000,18 @@ tenant_id=7167a092ece84bae8cead4bf9d15bb3b
             if user.name == user_name:
                 user_id = user.id
                 break
-    if tenant_name:
-        for tenant in kstone.tenants.list():
-            if tenant.name == tenant_name:
-                tenant_id = tenant.id
+    if project_name:
+        for project in kstone.projects.list():
+            if project.name == project_name:
+                project_id = project.id
                 break
-    if not user_id or not tenant_id:
-        return {'Error': 'Unable to resolve user or tenant id'}
-    for role in kstone.roles.roles_for_user(user=user_id, tenant=tenant_id):
+    if not user_id or not project_id:
+        return {'Error': 'Unable to resolve user or project id'}
+    for role in kstone.roles.roles_for_user(user=user_id, project=project_id):
         ret[role.name] = {'id': role.id,
                           'name': role.name,
                           'user_id': user_id,
-                          'tenant_id': tenant_id}
+                          'project_id': project_id}
     return ret
 
 
@@ -1043,5 +1043,5 @@ def _item_list(profile=None, **connection_args):
     # endpoint-delete     Delete a service endpoint
     # discover            Discover Keystone servers and show authentication
     #                     protocols and
-    # bootstrap           Grants a new role to a new user on a new tenant, after
+    # bootstrap           Grants a new role to a new user on a new project, after
     #                     creating each.

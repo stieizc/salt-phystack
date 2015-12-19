@@ -1,5 +1,4 @@
 {% from 'openstack/keystone/map.jinja2' import keystone %}
-{% set token = keystone.options.present.DEFAULT.admin_token %}
 ---
 include:
   - .site
@@ -10,7 +9,7 @@ keystone service {{service.name}}:
     - name: {{service.name}}
     - service_type: {{service.service_type}}
     - description: {{service.description}}
-    - connection_token: {{token}}
+    - connection_token: {{keystone.token}}
     - connection_endpoint: http://localhost:35357/v3
 {% endfor -%}
 
@@ -21,6 +20,6 @@ keystone endpoint {{endpoint.name}}:
     - publicurl: {{endpoint.publicurl}}
     - internalurl: {{endpoint.internalurl}}
     - adminurl: {{endpoint.adminurl}}
-    - connection_token: {{token}}
+    - connection_token: {{keystone.token}}
     - connection_endpoint: http://localhost:35357/v3
 {% endfor -%}

@@ -5,5 +5,16 @@
 openstack:
   keystone:
     options: {{options}}
+    roles:
+      - admin
+      - user
+    projects:
+      - name: admin
+        description: Admin Project
+      - name: service
+        description: Service Project
+      - name: demo
+        description: Demo Project
     accounts: {{accounts}}
     credentials: {{credentials}}
+    token: {{options.present.DEFAULT.admin_token}}

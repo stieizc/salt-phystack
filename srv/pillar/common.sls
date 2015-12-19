@@ -9,3 +9,5 @@ chrony:
         - s1c.time.edu.cn iburst
         - s1d.time.edu.cn iburst
         - s1e.time.edu.cn iburst
+
+email: stieizc.33@gmail.com
