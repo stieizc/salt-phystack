@@ -6,3 +6,4 @@ base:
     - 'os/{{grains.os}}'
     - mysql
     - rabbitmq
+    - openstack.keystone

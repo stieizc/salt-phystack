@@ -5,3 +5,4 @@ package:
 lookup:
   packages:
     - openstack-keystone
+  config: /etc/keystone/keystone.conf

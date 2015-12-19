@@ -1,2 +1,4 @@
-{% import_yaml 'openstack/keystone/defaults.yml' as defaults' %}
-{% set keystone = defaults %}
+{% import_yaml 'openstack/keystone/defaults.yml' as defaults %}
+{% set keystone = salt.grains.filter_by({
+  'default': defaults, 
+}, merge=salt.pillar.get('openstack:keystone'), base='default') %}

@@ -1,0 +1,3 @@
+{% macro db_url(prefix, host, db_data) -%}
+{{prefix}}://{{db_data.user | urlencode}}:{{db_data.password | urlencode}}@{{host}}/{{db_data.db | urlencode}}
+{%- endmacro %}

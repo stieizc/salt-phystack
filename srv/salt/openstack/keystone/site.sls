@@ -1,9 +1,16 @@
-{% import keystone from 'openstack/keystone/map.jinja2' %}
+{% from 'openstack/keystone/map.jinja2' import keystone %}
 ---
 include:
+  - openstack.keystone.config
   - apache
   - apache.mod.wsgi
   - apache.service
+
+extend:
+  apache service:
+    service:
+      - watch:
+        - sls: openstack.keystone.config
 
 site config:
   file.managed:
