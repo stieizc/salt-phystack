@@ -40,7 +40,14 @@ mysql:
         - database: {{data.db}}
           grants: ['all privileges']
 {%- endif %}
-{% endfor -%}
+{% endfor %}
+
+  database:
+{%- for k, data in accounts.iteritems() %}
+{%- if k != 'root' %}
+    - {{data.db}}
+{%- endif %}
+{% endfor %}
 
 {%- if grains.os_family == 'RedHat' and grains.osmajorrelease == '7' %}
   lookup:

@@ -12,3 +12,4 @@
 /srv/pillar/database/accounts.yml
 /srv/pillar/openstack/keystone/accounts.yml
 /srv/pillar/openstack/keystone/options.yml
+/srv/pillar/openstack/keystone/credentials.yml

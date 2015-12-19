@@ -1,6 +1,6 @@
 ---
 include:
-  - mysql
+  - mysql.database
   - openstack.keystone
 
 keystone sync database:
@@ -9,5 +9,7 @@ keystone sync database:
     - user: keystone
     - group: keystone
     - watch:
-      - sls: mysql
-      - sls: openstack.keystone
+      - mysql_database: keystone
+      - pkg: keystone packages
+      #- sls: mysql.database
+      #- sls: openstack.keystone

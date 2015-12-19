@@ -1,4 +1,4 @@
 ---
 include:
-  - profile.memcache
+  #- profile.memcache
   - openstack.keystone
