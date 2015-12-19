@@ -521,8 +521,8 @@ def service_list(profile=None, **connection_args):
     return ret
 
 
-def project_create(name, description=None, enabled=True, profile=None,
-                  **connection_args):
+def project_create(name, description=None, enabled=True, domain=None,
+                   profile=None, **connection_args):
     '''
     Create a keystone project
 
@@ -534,7 +534,8 @@ def project_create(name, description=None, enabled=True, profile=None,
         salt '*' keystone.project_create test enabled=False
     '''
     kstone = auth(profile, **connection_args)
-    new = kstone.projects.create(name, description, enabled)
+    new = kstone.projects.create(name, description=description, domain=domain,
+                                 enabled=enabled)
     return project_get(new.id, profile=profile, **connection_args)
 
 
@@ -566,8 +567,8 @@ def project_delete(project_id=None, name=None, profile=None, **connection_args):
     return ret
 
 
-def project_get(project_id=None, name=None, profile=None,
-               **connection_args):
+def project_get(project_id=None, name=None, profile=None, domain=None,
+                **connection_args):
     '''
     Return a specific projects (keystone project-get)
 
@@ -582,7 +583,7 @@ def project_get(project_id=None, name=None, profile=None,
     kstone = auth(profile, **connection_args)
     ret = {}
     if name:
-        for project in kstone.projects.list():
+        for project in kstone.projects.list(domain=domain):
             if project.name == name:
                 project_id = project.id
                 break
@@ -590,13 +591,13 @@ def project_get(project_id=None, name=None, profile=None,
         return {'Error': 'Unable to resolve project id'}
     project = kstone.projects.get(project_id)
     ret[project.name] = {'id': project.id,
-                        'name': project.name,
-                        'description': project.description,
-                        'enabled': project.enabled}
+                         'name': project.name,
+                         'description': project.description,
+                         'enabled': project.enabled}
     return ret
 
 
-def project_list(profile=None, **connection_args):
+def project_list(domain=None, profile=None, **connection_args):
     '''
     Return a list of available projects (keystone projects-list)
 
@@ -608,7 +609,7 @@ def project_list(profile=None, **connection_args):
     '''
     kstone = auth(profile, **connection_args)
     ret = {}
-    for project in kstone.projects.list():
+    for project in kstone.projects.list(domain=domain):
         ret[project.name] = {'id': project.id,
                             'name': project.name,
                             'description': project.description,
@@ -617,7 +618,8 @@ def project_list(profile=None, **connection_args):
 
 
 def project_update(project_id=None, name=None, description=None,
-                  enabled=None, profile=None, **connection_args):
+                   domain=None, enabled=None, profile=None,
+                   **connection_args):
     '''
     Update a project's information (keystone project-update)
     The following fields may be updated: name, email, enabled.
@@ -646,7 +648,8 @@ def project_update(project_id=None, name=None, description=None,
         description = project.description
     if enabled is None:
         enabled = project.enabled
-    kstone.projects.update(project_id, name, description, enabled)
+    kstone.projects.update(project_id, name=name, domain=domain,
+                           description=description, enabled=enabled)
 
 
 def token_get(profile=None, **connection_args):
@@ -667,7 +670,8 @@ def token_get(profile=None, **connection_args):
             'project_id': token['project_id']}
 
 
-def user_list(profile=None, **connection_args):
+def user_list(default_project=None, domain=None,
+              profile=None, **connection_args):
     '''
     Return a list of available users (keystone user-list)
 
@@ -679,7 +683,8 @@ def user_list(profile=None, **connection_args):
     '''
     kstone = auth(profile, **connection_args)
     ret = {}
-    for user in kstone.users.list():
+    for user in kstone.users.list(default_project=default_project,
+                                  domain=domain):
         ret[user.name] = {'id': user.id,
                           'name': user.name,
                           'email': user.email,
@@ -690,7 +695,8 @@ def user_list(profile=None, **connection_args):
     return ret
 
 
-def user_get(user_id=None, name=None, profile=None, **connection_args):
+def user_get(user_id=None, name=None, domain=None,
+             profile=None, **connection_args):
     '''
     Return a specific users (keystone user-get)
 
@@ -705,7 +711,7 @@ def user_get(user_id=None, name=None, profile=None, **connection_args):
     kstone = auth(profile, **connection_args)
     ret = {}
     if name:
-        for user in kstone.users.list():
+        for user in kstone.users.list(domain=domain):
             if user.name == name:
                 user_id = user.id
                 break
@@ -728,7 +734,7 @@ def user_get(user_id=None, name=None, profile=None, **connection_args):
     return ret
 
 
-def user_create(name, password, email, project_id=None,
+def user_create(name, password, email, project_id=None, domain=None,
                 enabled=True, profile=None, **connection_args):
     '''
     Create a user (keystone user-create)
@@ -743,6 +749,7 @@ def user_create(name, password, email, project_id=None,
     item = kstone.users.create(name=name,
                                password=password,
                                email=email,
+                               domain=None,
                                project_id=project_id,
                                enabled=enabled)
     return user_get(item.id, profile=profile, **connection_args)
@@ -776,8 +783,9 @@ def user_delete(user_id=None, name=None, profile=None, **connection_args):
     return ret
 
 
-def user_update(user_id=None, name=None, email=None, enabled=None,
-                project=None, profile=None, **connection_args):
+def user_update(user_id=None, name=None, email=None, password=None,
+                enabled=None, domain=None, project=None, profile=None,
+                **connection_args):
     '''
     Update a user's information (keystone user-update)
     The following fields may be updated: name, email, enabled, project.
@@ -792,7 +800,7 @@ def user_update(user_id=None, name=None, email=None, enabled=None,
     '''
     kstone = auth(profile, **connection_args)
     if not user_id:
-        for user in kstone.users.list():
+        for user in kstone.users.list(domain=domain):
             if user.name == name:
                 user_id = user.id
                 break
@@ -806,79 +814,10 @@ def user_update(user_id=None, name=None, email=None, enabled=None,
         email = user.email
     if enabled is None:
         enabled = user.enabled
-    kstone.users.update(user=user_id, name=name, email=email, enabled=enabled)
-    if project:
-        for tnt in kstone.projects.list():
-            if tnt.name == project:
-                project_id = tnt.id
-                break
-        kstone.users.update_project(user_id, project_id)
+    kstone.users.update(user=user_id, name=name, email=email,
+                        password=password, domain=domain,
+                        default_project=project, enabled=enabled)
     ret = 'Info updated for user ID {0}'.format(user_id)
-    return ret
-
-
-def user_verify_password(user_id=None, name=None, password=None,
-                         profile=None, **connection_args):
-    '''
-    Verify a user's password
-
-    CLI Examples:
-
-    .. code-block:: bash
-
-        salt '*' keystone.user_verify_password name=test password=foobar
-        salt '*' keystone.user_verify_password user_id=c965f79c4f864eaaa9c3b41904e67082 password=foobar
-    '''
-    kstone = auth(profile, **connection_args)
-    if 'connection_endpoint' in connection_args:
-        auth_url = connection_args.get('connection_endpoint')
-    else:
-        auth_url = __salt__['config.option']('keystone.endpoint',
-                                         'http://127.0.0.1:35357/v2.0')
-
-    if user_id:
-        for user in kstone.users.list():
-            if user.id == user_id:
-                name = user.name
-                break
-    if not name:
-        return {'Error': 'Unable to resolve user name'}
-    kwargs = {'username': name,
-              'password': password,
-              'auth_url': auth_url}
-    try:
-        userauth = client.Client(**kwargs)
-    except (keystoneclient.exceptions.Unauthorized,
-            keystoneclient.exceptions.AuthorizationFailure):
-        return False
-    return True
-
-
-def user_password_update(user_id=None, name=None, password=None,
-                         profile=None, **connection_args):
-    '''
-    Update a user's password (keystone user-password-update)
-
-    CLI Examples:
-
-    .. code-block:: bash
-
-        salt '*' keystone.user_password_update c965f79c4f864eaaa9c3b41904e67082 password=12345
-        salt '*' keystone.user_password_update user_id=c965f79c4f864eaaa9c3b41904e67082 password=12345
-        salt '*' keystone.user_password_update name=nova password=12345
-    '''
-    kstone = auth(profile, **connection_args)
-    if name:
-        for user in kstone.users.list():
-            if user.name == name:
-                user_id = user.id
-                break
-    if not user_id:
-        return {'Error': 'Unable to resolve user id'}
-    kstone.users.update_password(user=user_id, password=password)
-    ret = 'Password updated for user ID {0}'.format(user_id)
-    if name:
-        ret += ' ({0})'.format(name)
     return ret
 
 
@@ -926,7 +865,7 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not role_id:
         return {'Error': 'Unable to resolve role id'}
 
-    kstone.roles.add_user_role(user_id, role_id, project_id)
+    kstone.roles.grant(role_id, user=user_id, project=project_id)
     ret_msg = '"{0}" role added for user "{1}" for "{2}" project'
     return ret_msg.format(role, user, project)
 
@@ -974,7 +913,7 @@ role_id=ce377245c4ec9b70e1c639c89e8cead4
     if not role_id:
         return {'Error': 'Unable to resolve role id'}
 
-    kstone.roles.remove_user_role(user_id, role_id, project_id)
+    kstone.roles.revoke(role=role_id, user=user_id, project=project_id)
     ret_msg = '"{0}" role removed for user "{1}" under "{2}" project'
     return ret_msg.format(role, user, project)
 
@@ -1007,7 +946,7 @@ project_id=7167a092ece84bae8cead4bf9d15bb3b
                 break
     if not user_id or not project_id:
         return {'Error': 'Unable to resolve user or project id'}
-    for role in kstone.roles.roles_for_user(user=user_id, project=project_id):
+    for role in kstone.roles.list(user=user_id, project=project_id):
         ret[role.name] = {'id': role.id,
                           'name': role.name,
                           'user_id': user_id,

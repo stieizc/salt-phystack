@@ -79,6 +79,7 @@ def user_present(name,
                  password,
                  email,
                  project=None,
+                 domain=None,
                  enabled=True,
                  roles=None,
                  profile=None,
@@ -121,8 +122,9 @@ def user_present(name,
     # Validate project if set
     if project is not None:
         projectdata = __salt__['keystone.project_get'](name=project,
-                                                     profile=profile,
-                                                     **connection_args)
+                                                       domain=domain,
+                                                       profile=profile,
+                                                       **connection_args)
         if 'Error' in projectdata:
             ret['result'] = False
             ret['comment'] = 'Tenant "{0}" does not exist'.format(project)
@@ -132,55 +134,30 @@ def user_present(name,
         project_id = None
 
     # Check if user is already present
-    user = __salt__['keystone.user_get'](name=name, profile=profile,
-                                         **connection_args)
+    user = __salt__['keystone.user_get'](name=name, domain=domain,
+                                         profile=profile, **connection_args)
     if 'Error' not in user:
         ret['comment'] = 'User "{0}" is already present'.format(name)
         if user[name]['email'] != email:
             if __opts__['test']:
                 ret['result'] = None
                 ret['changes']['Email'] = 'Will be updated'
-                return ret
-            __salt__['keystone.user_update'](name=name, email=email,
-                                             profile=profile, **connection_args)
-            ret['comment'] = 'User "{0}" has been updated'.format(name)
             ret['changes']['Email'] = 'Updated'
         if user[name]['enabled'] != enabled:
             if __opts__['test']:
                 ret['result'] = None
                 ret['changes']['Enabled'] = 'Will be {0}'.format(enabled)
-                return ret
-            __salt__['keystone.user_update'](name=name,
-                                             enabled=enabled,
-                                             profile=profile,
-                                             **connection_args)
-            ret['comment'] = 'User "{0}" has been updated'.format(name)
             ret['changes']['Enabled'] = 'Now {0}'.format(enabled)
         if project and ('project_id' not in user[name] or
-                       user[name]['project_id'] != project_id):
+                        user[name]['project_id'] != project_id):
             if __opts__['test']:
                 ret['result'] = None
-                ret['changes']['Tenant'] = 'Will be added to "{0}" project'.format(project)
-                return ret
-            __salt__['keystone.user_update'](name=name, project=project,
-                                             profile=profile,
-                                             **connection_args)
-            ret['comment'] = 'User "{0}" has been updated'.format(name)
-            ret['changes']['Tenant'] = 'Added to "{0}" project'.format(project)
-        if not __salt__['keystone.user_verify_password'](name=name,
-                                                         password=password,
-                                                         profile=profile,
-                                                         **connection_args):
-            if __opts__['test']:
-                ret['result'] = None
-                ret['changes']['Password'] = 'Will be updated'
-                return ret
-            __salt__['keystone.user_password_update'](name=name,
-                                                      password=password,
-                                                      profile=profile,
-                                                      **connection_args)
-            ret['comment'] = 'User "{0}" has been updated'.format(name)
-            ret['changes']['Password'] = 'Updated'
+                ret['changes']['Tenant'] = \
+                    'Will be added to "{0}" project'.format(project)
+        __salt__['keystone.user_update'](name=name, password=password,
+                                         project=project, email=email,
+                                         domain=domain, profile=profile,
+                                         **connection_args)
         if roles:
             for project in roles.keys():
                 args = dict({'user_name': name, 'project_name':
@@ -280,8 +257,8 @@ def user_absent(name, profile=None, **connection_args):
     return ret
 
 
-def project_present(name, description=None, enabled=True, profile=None,
-                   **connection_args):
+def project_present(name, description=None, enabled=True, domain=None,
+                    profile=None, **connection_args):
     '''
     Ensures that the keystone project exists
 
@@ -312,6 +289,7 @@ def project_present(name, description=None, enabled=True, profile=None,
                 ret['changes']['Description'] = 'Will be updated'
                 return ret
             __salt__['keystone.project_update'](name=name,
+                                               domain=domain,
                                                description=description,
                                                enabled=enabled,
                                                profile=profile,
@@ -325,6 +303,7 @@ def project_present(name, description=None, enabled=True, profile=None,
                 ret['changes']['Enabled'] = 'Will be {0}'.format(enabled)
                 return ret
             __salt__['keystone.project_update'](name=name,
+                                               domain=domain,
                                                description=description,
                                                enabled=enabled,
                                                profile=profile,
@@ -338,7 +317,10 @@ def project_present(name, description=None, enabled=True, profile=None,
             ret['changes']['Tenant'] = 'Will be created'
             return ret
         # Create project
-        __salt__['keystone.project_create'](name, description, enabled,
+        __salt__['keystone.project_create'](name,
+                                           domain=domain,
+                                           description=description,
+                                           enabled=enabled,
                                            profile=profile,
                                            **connection_args)
         ret['comment'] = 'Tenant "{0}" has been added'.format(name)
