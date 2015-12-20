@@ -1,0 +1,8 @@
+---
+package:
+  ensure_latest: True
+
+lookup:
+  packages:
+    - openstack-keystone
+  config: /etc/keystone/keystone.conf

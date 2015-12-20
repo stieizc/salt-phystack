@@ -1,0 +1,21 @@
+{% macro ini_options(file, options) -%}
+
+{%- if 'absent' in options %}
+{{file}} purge sections:
+  ini.sections_absent:
+    - name: {{file}}
+    - sections: {{options.absent}}
+{% endif -%}
+
+{%- if 'present' in options %}
+{{file}} setup sections:
+  ini.options_present:
+    - name: {{file}}
+    - sections: {{options.present}}
+{%- if 'absent' in options %}
+    - require:
+      - ini: {{file}} purge sections
+{% endif -%}
+{% endif -%}
+
+{%- endmacro %}

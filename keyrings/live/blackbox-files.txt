@@ -1,2 +1,5 @@
-srv/pillar/database.yml
+srv/pillar/database/accounts.yml
 srv/pillar/mq.yml
+srv/pillar/openstack/keystone/accounts.yml
+srv/pillar/openstack/keystone/credentials.yml
+srv/pillar/openstack/keystone/options.yml

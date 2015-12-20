@@ -8,5 +8,8 @@
 /keyrings/live/pubring.gpg~
 /keyrings/live/pubring.kbx~
 /keyrings/live/secring.gpg
-/srv/pillar/database.yml
 /srv/pillar/mq.yml
+/srv/pillar/database/accounts.yml
+/srv/pillar/openstack/keystone/accounts.yml
+/srv/pillar/openstack/keystone/options.yml
+/srv/pillar/openstack/keystone/credentials.yml

@@ -12,6 +12,8 @@ file_roots:
         - srv/formulas/mysql-formula
         - srv/formulas/epel-formula
         - srv/formulas/rabbitmq-formula
+        - srv/formulas/memcached-formula
+        - srv/formulas/apache-formula
 
 pillar_roots:
     base:

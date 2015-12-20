@@ -10,3 +10,9 @@
 [submodule "srv/formulas/rabbitmq-formula"]
 	path = srv/formulas/rabbitmq-formula
 	url = https://github.com/saltstack-formulas/rabbitmq-formula.git
+[submodule "srv/formulas/memcached-formula"]
+	path = srv/formulas/memcached-formula
+	url = https://github.com/saltstack-formulas/memcached-formula.git
+[submodule "srv/formulas/apache-formula"]
+	path = srv/formulas/apache-formula
+	url = https://github.com/saltstack-formulas/apache-formula.git

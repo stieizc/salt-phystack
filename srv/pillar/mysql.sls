@@ -1,4 +1,4 @@
-{% import_yaml 'database.yml' as database %}
+{% import_yaml 'database/accounts.yml' as accounts %}
 ---
 mysql:
   global:
@@ -17,7 +17,7 @@ mysql:
 
   server:
     root_user: 'root'
-    root_password: {{database.accounts.root.password}}
+    root_password: {{accounts.root.password}}
     mysqld:
       default-storage-engine: innodb
       innodb_file_per_table: true
@@ -29,6 +29,25 @@ mysql:
       pid-file: /var/run/mariadb/mariadb.pid
     lookup:
       python: python2-PyMySQL
+
+  user:
+{%- for k, data in accounts.iteritems() %}
+{%- if k != 'root' %}
+    {{data.user}}:
+      password: {{data.password}}
+      host: localhost
+      databases:
+        - database: {{data.db}}
+          grants: ['all privileges']
+{%- endif %}
+{% endfor %}
+
+  database:
+{%- for k, data in accounts.iteritems() %}
+{%- if k != 'root' %}
+    - {{data.db}}
+{%- endif %}
+{% endfor %}
 
 {%- if grains.os_family == 'RedHat' and grains.osmajorrelease == '7' %}
   lookup:
